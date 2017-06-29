@@ -34,15 +34,15 @@ int main(int argc, char **argv)
 	RuntimeParameters runtime_parameters;
 	runtime_parameters.sensing_mode = SENSING_MODE_STANDARD;
 
-	Mat depth;
+	Mat disparityMap;
 	while (flying)
 	{
 		if (zed.grab() == SUCCESS)
 		{
-			zed.retrieveMeasure(depth, MEASURE_DEPTH);
+			zed.retrieveMeasure(disparityMap, MEASURE_DISPARITY);
 
 			float sectionValues[9];
-			partitionCalc(depth, sectionValues);
+			partitionCalc(disparityMap, sectionValues);
 			int section = selectSection(sectionValues);
 			manuever(section);
 		}
@@ -53,10 +53,10 @@ int main(int argc, char **argv)
 }
 
 //Partition the disparity map and calculate all of the percentage of pixels higher than the threshold in each section
-void partitionCalc(Mat depth, float *sectionValues)
+void partitionCalc(Mat disparityMap, float *sectionValues)
 {
-	int startWidth[] = { 0, depth.getWidth() / 3, depth.getWidth() * (2.0 / 3) };
-	int startHeight[] = { 0, depth.getHeight() / 3, depth.getHeight() * (2.0 / 3) };
+	int startWidth[] = { 0, disparityMap.getWidth() / 3, disparityMap.getWidth() * (2.0 / 3) };
+	int startHeight[] = { 0, disparityMap.getHeight() / 3, disparityMap.getHeight() * (2.0 / 3) };
 
 	int numAbove = 0;
 	int totalPix = 0;
@@ -70,16 +70,16 @@ void partitionCalc(Mat depth, float *sectionValues)
 		int endW;	//Used to know where the width of the current section ends
 		int endH;	//Used to know where the height of the current section ends
 		if (col == 2)
-			endW = depth.getWidth();	//The width ends at the overall width of the image
+			endW = disparityMap.getWidth();	//The width ends at the overall width of the image
 		else
 			endW = startWidth[col + 1];	//The width ends at the point the next section starts
 		if (row == 2)
-			endH = depth.getHeight();	//The height ends at the overall height of the image
+			endH = disparityMap.getHeight();	//The height ends at the overall height of the image
 		else
 			endH = startHeight[row + 1];	//The height ends at the point the next section starts
 
 		//Calculates the number of pixels above the threshold for the current section
-		countPixels(depth, startW, startH, endW, endH, numAbove, totalPix);
+		countPixels(disparityMap, startW, startH, endW, endH, numAbove, totalPix);
 
 		//Calculate the percentage
 		sectionValues[i] = getPercentage(numAbove, totalPix);
@@ -87,16 +87,16 @@ void partitionCalc(Mat depth, float *sectionValues)
 }
 
 //Count the number of pixels in a given section
-void countPixels(Mat depth, const int& startW, const int& startH, const int& endW, const int& endH, int& numAbove, int& totalPix)
+void countPixels(Mat disparityMap, const int& startW, const int& startH, const int& endW, const int& endH, int& numAbove, int& totalPix)
 {
 	for (int x = startW; x < endW; x++)
 	{
 		for (int y = startH; y < endH; y++)
 		{
 			totalPix++;
-			float depthVal = 0.0f;
-			depth.getValue(x, y, &depthVal);
-			if (depthVal > DIS_THRESH)
+			int disparityValue = 0;
+			disparityMap.getValue(x, y, &disparityValue);
+			if (disparityValue > DIS_THRESH)
 				numAbove++;
 		}
 	}
