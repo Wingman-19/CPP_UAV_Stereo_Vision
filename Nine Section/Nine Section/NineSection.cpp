@@ -12,55 +12,71 @@ using namespace sl;
 #define DIS_THRESH 120	//Threshold for the disparity values. The higher the value, the closer the object
 #define PER_THRESH 20	//Threshold for the percentage of pixels in a section that are above the disThresh
 
-void partitionCalc(Mat, float*);
-void countPixels(Mat, const int&, const int&, const int&, const int&, int&, int&);
-int getPercentage(const int&, const int&);
-int selectSection(const float*);
-void manuever(const int&);
+void partitionCalc(Mat, float*);	//Partition the disparity map and calculate all of the percentage of pixels higher than the threshold in each section
+void countPixels(Mat, const int&, const int&, const int&, const int&, int&, int&);	//Count the number of pixels in a given section that are higher than the threshold
+int getPercentage(const int&, const int&);	//Returns the percentage of pixels higher than the threshold in the given section
+int selectSection(const float*);	//Selects the section with the lowest percentage that is lower than the percentage threshold
+void manuever(const int&);	//Moves the UAV based on the section selected
 
 int main(int argc, char **argv)
 {
-	bool flying = true;
+	bool flying = true;	//Used to continue gathering data from the stereo camera. Will be set to false when the destination is reached
+						//May not need this. May be able to use an infinite loop instead and not worry about it
+	//Creates a camera object so that we can get the disparity images
 	Camera zed;
 
+	//Initializes the parameters for the camera
 	InitParameters init_params;
 	init_params.depth_mode = DEPTH_MODE_PERFORMANCE;
 	init_params.coordinate_units = UNIT_MILLIMETER;
 
+	//Makes sure the camera is opened properly
 	ERROR_CODE err = zed.open(init_params);
 	if (err != SUCCESS)
 		exit(-1);
 
+	//Creates the runtime parameters for the camera
 	RuntimeParameters runtime_parameters;
 	runtime_parameters.sensing_mode = SENSING_MODE_STANDARD;
 
+	//Creates an object to hold the disparity map and allow us to access the individual pixels of the image
 	Mat disparityMap;
+	
+	//Continues to gather data and select the correct section of the disparity map while the UAV is flying
+	//As mentioned before, this may be able to be an infinate loop
 	while (flying)
 	{
+		//Tries to get an image from the zed camera
 		if (zed.grab() == SUCCESS)
 		{
+			//Gets the disparity map from the zed camera
 			zed.retrieveMeasure(disparityMap, MEASURE_DISPARITY);
 
-			float sectionValues[9];
+			float sectionValues[9];	//Holds the percentage of pixels that are above the threshold in each section of the disparity image
 			partitionCalc(disparityMap, sectionValues);
-			int section = selectSection(sectionValues);
+			int section = selectSection(sectionValues);	//The section that is selected
 			manuever(section);
 		}
 	}
 
+	//Close the camera
 	zed.close();
+	//End the program
 	return 0;
 }
 
 //Partition the disparity map and calculate all of the percentage of pixels higher than the threshold in each section
 void partitionCalc(Mat disparityMap, float *sectionValues)
 {
+	//An array of values that seperates the disparity image across its width
 	int startWidth[] = { 0, disparityMap.getWidth() / 3, disparityMap.getWidth() * (2.0 / 3) };
+	//An array of values that seperates the disparity image across its height
 	int startHeight[] = { 0, disparityMap.getHeight() / 3, disparityMap.getHeight() * (2.0 / 3) };
 
-	int numAbove = 0;
-	int totalPix = 0;
+	int numAbove = 0;	//Holds the number of pixels that are above the given threshold
+	int totalPix = 0;	//Holds the total number of pixels in the section
 	
+	//Loops through each section
 	for (int i = 0; i < 9; i++)
 	{
 		int row = i / 3;	//Used to know the row of the current section
@@ -86,18 +102,20 @@ void partitionCalc(Mat disparityMap, float *sectionValues)
 	}
 }
 
-//Count the number of pixels in a given section
+//Count the number of pixels in a given section that are higher than the threshold
 void countPixels(Mat disparityMap, const int& startW, const int& startH, const int& endW, const int& endH, int& numAbove, int& totalPix)
 {
+	//Loop through all of the pixels in the given section
 	for (int x = startW; x < endW; x++)
 	{
 		for (int y = startH; y < endH; y++)
 		{
-			totalPix++;
-			int disparityValue = 0;
-			disparityMap.getValue(x, y, &disparityValue);
+			totalPix++;	//Increase the total number of pixels by 1
+			int disparityValue = 0;	//Initialize the disparity value to 0
+			disparityMap.getValue(x, y, &disparityValue);	//Get the disparity value of the current pixel
+			//Checks to see if the value is greater than the given threshold
 			if (disparityValue > DIS_THRESH)
-				numAbove++;
+				numAbove++;	//Increases the number of pixels greater than the threshold by 1
 		}
 	}
 }
