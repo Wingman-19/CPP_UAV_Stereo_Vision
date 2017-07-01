@@ -11,12 +11,29 @@ using namespace sl;
 
 #define DIS_THRESH 120	//Threshold for the disparity values. The higher the value, the closer the object
 #define PER_THRESH 20	//Threshold for the percentage of pixels in a section that are above the disThresh
+#define PI 3.14159265359
+#define TO_RADIANS  PI/180	//Used to convert degrees to radians
+#define RADIUS_EARTH 6378037.0
+#define DIST 10		//This is the distance the new waypoint will be set to the left or right of the UAV (in meters) (subject to change)
 
 void partitionCalc(Mat, float*);	//Partition the disparity map and calculate all of the percentage of pixels higher than the threshold in each section
 void countPixels(Mat, const int&, const int&, const int&, const int&, int&, int&);	//Count the number of pixels in a given section that are higher than the threshold
 int getPercentage(const int&, const int&);	//Returns the percentage of pixels higher than the threshold in the given section
 int selectSection(const float*);	//Selects the section with the lowest percentage that is lower than the percentage threshold
 void manuever(const int&);	//Moves the UAV based on the section selected
+int calcNewHeadingRight(int);	//Calculates what direction (to the right) the new waypoint will be in
+int calcNewHeadingLeft(int);	//Calculates what direction (to the left) the new waypoint will be in
+double getThetaRads(double);	//Returns the angle in radians
+double getX(double);	//Returns the X coordinate of the new position (the current X location is 0)
+double getY(double);	//Returns the Y coordinate of the new position (the current Y location is 0)
+
+//Holds the GPS location (lat, long, alt)
+struct Waypoint
+{
+	double lat;	//Latitude
+	double lon;	//Longitude
+	double alt;	//Altitude
+};
 
 int main(int argc, char **argv)
 {
@@ -175,4 +192,52 @@ void manuever(const int& section)
 		default:
 			//Turn in place or hover in place
 	}
+}
+
+//Calculates what direction (to the right) the new waypoint will be in
+int calcNewHeadingRight(int heading)
+{
+	int newHeading = heading + 90;	//Creates a right angle (to the right) with the old heading
+	//Check to see if the new angle will have a value greater than 360. Adjust the value if it is
+	if (newHeading > 360)
+		newHeading -= 360;
+	return newHeading;
+}
+
+//Calculates what direction (to the left) the new waypoint will be in
+int calcNewHeadingLeft(int heading)
+{
+	int newHeading = heading - 90;	//Creates a right angle (to the left) with the old heading
+	//Check to see if the new heading is negative. Adjust the value if it is
+	if (newHeading < 0)
+		newHeading += 360;
+	return newHeading;
+}
+
+//Returns the angle in radians
+double getThetaRads(double heading)
+{
+	double theta;
+	//Check to see if the heading is in any quadrant other than the first
+	//Gives the angle with respect to the positive x axis so we can use the Unit Circle
+	if (heading > 90)
+		theta = 360 - heading + 90;
+	else
+		theta = 90 - heading;
+	theta = theta * TO_RADIANS;	//Convert from degrees to radians
+	return theta;
+}
+
+//Returns the X coordinate of the new position (the current X location is 0)
+double getX(double theta)
+{
+	double x = cos(theta) * DIST;	//Find the new x coordinate of the new waypoint
+	return x;
+}
+
+//Returns the Y coordinate of the new position (the current Y location is 0)
+double getY(double theta)
+{
+	double y = sin(theta) * DIST;	//Find the new y coordinate of the new waypoint
+	return y;
 }
