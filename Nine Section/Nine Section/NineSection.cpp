@@ -21,18 +21,21 @@ void countPixels(Mat, const int&, const int&, const int&, const int&, int&, int&
 int getPercentage(const int&, const int&);	//Returns the percentage of pixels higher than the threshold in the given section
 int selectSection(const float*);	//Selects the section with the lowest percentage that is lower than the percentage threshold
 void manuever(const int&);	//Moves the UAV based on the section selected
-int calcNewHeadingRight(int);	//Calculates what direction (to the right) the new waypoint will be in
-int calcNewHeadingLeft(int);	//Calculates what direction (to the left) the new waypoint will be in
+double calcNewHeadingRight(double);	//Calculates what direction (to the right) the new waypoint will be in
+double calcNewHeadingLeft(double);	//Calculates what direction (to the left) the new waypoint will be in
 double getThetaRads(double);	//Returns the angle in radians
 double getX(double);	//Returns the X coordinate of the new position (the current X location is 0)
 double getY(double);	//Returns the Y coordinate of the new position (the current Y location is 0)
+Waypoint getNewWaypoint(const Waypoint&, char);	//Gets a new waypoint to the right or the left depending on the character passed in (r/l)
+Waypoint distanceConvert(const double&, const double&, const Waypoint&);	//Converts a change in distance to latitude and longitude points
 
 //Holds the GPS location (lat, long, alt)
 struct Waypoint
 {
-	double lat;	//Latitude
-	double lon;	//Longitude
-	double alt;	//Altitude
+	double latitude;
+	double longitude;
+	double altitude;
+	double heading;
 };
 
 int main(int argc, char **argv)
@@ -160,34 +163,50 @@ int selectSection(const float *sectionValues)
 //Move the UAV in respect to the section that was selected.
 void manuever(const int& section)
 {
+	Waypoint cur;// = getCurWaypoint();
+	Waypoint next;
 	switch (section)
 	{
 		case 0:
 			//Set temp waypoint left and increase alt
+			next = getNewWaypoint(cur, 'l');
+			next.altitude += 10;
 			break;
 		case 1:
 			//Increase alt
+			next = cur;
+			next.altitude += 10;
 			break;
 		case 2:
 			//Set temp waypoint right and increase alt
+			next = getNewWaypoint(cur, 'r');
+			next.altitude += 10;
 			break;
 		case 3:
 			//Set temp waypoint left
+			next = getNewWaypoint(cur, 'l');
 			break;
 		case 4:
 			//Continue to destination
 			break;
 		case 5:
 			//Set temp waypoint right
+			next = getNewWaypoint(cur, 'r');
 			break;
 		case 6:
 			//Set temp waypoint left and decrease alt
+			next = getNewWaypoint(cur, 'l');
+			next.altitude -= 10;
 			break;
 		case 7:
 			//Decrease alt
+			next = cur;
+			next.altitude -= 10;
 			break;
 		case 8:
 			//Set temp waypoint right and decrease alt
+			next = getNewWaypoint(cur, 'r');
+			next.altitude -= 10;
 			break;
 		default:
 			//Turn in place or hover in place
@@ -195,9 +214,9 @@ void manuever(const int& section)
 }
 
 //Calculates what direction (to the right) the new waypoint will be in
-int calcNewHeadingRight(int heading)
+double calcNewHeadingRight(double heading)
 {
-	int newHeading = heading + 90;	//Creates a right angle (to the right) with the old heading
+	double newHeading = heading + 90;	//Creates a right angle (to the right) with the old heading
 	//Check to see if the new angle will have a value greater than 360. Adjust the value if it is
 	if (newHeading > 360)
 		newHeading -= 360;
@@ -205,9 +224,9 @@ int calcNewHeadingRight(int heading)
 }
 
 //Calculates what direction (to the left) the new waypoint will be in
-int calcNewHeadingLeft(int heading)
+double calcNewHeadingLeft(double heading)
 {
-	int newHeading = heading - 90;	//Creates a right angle (to the left) with the old heading
+	double newHeading = heading - 90;	//Creates a right angle (to the left) with the old heading
 	//Check to see if the new heading is negative. Adjust the value if it is
 	if (newHeading < 0)
 		newHeading += 360;
@@ -240,4 +259,42 @@ double getY(double theta)
 {
 	double y = sin(theta) * DIST;	//Find the new y coordinate of the new waypoint
 	return y;
+}
+
+//Gets a new waypoint to the right or the left depending on the character passed in (r/l)
+Waypoint getNewWaypoint(const Waypoint& cur, char dir)
+{
+	Waypoint next;	//The new waypoint
+	double heading;	//The new heading for the new waypoint
+	//If the UAV should turn left, the new heading is calculated to the left
+	if (dir == 'l')
+		heading = calcNewHeadingLeft(cur.heading);
+	//Otherwise the new heading is calculated to the right
+	else
+		heading = calcNewHeadingRight(cur.heading);
+
+	//The angle in radians
+	double theta = getThetaRads(heading);
+
+	//The current position on a xy plane is the origin (0, 0)
+	double x = getX(theta);	//The new X coordinate on a xy plane
+	double y = getY(theta);	//The new Y coordinate on a xy plane
+
+	next = distanceConvert(x, y, cur);	//Gets the new waypoint using the current waypoint and the new x and y coordinates
+	next.heading = heading;	//Sets the heading to the new heading
+	return next;
+}
+
+//Converts a change in distance to latitude and longitude points
+Waypoint distanceConvert(const double& deltaX, const double& deltaY, const Waypoint& cur)
+{
+	double deltaLat = (deltaY / RADIUS_EARTH);		//Change the change in y to change in latitude
+	double deltaLong = deltaX / (RADIUS_EARTH * cos(cur.latitude * PI / 180));	//Change the cahnge in x to change in longitude
+
+	//Using the current position, return the new position
+	Waypoint newPosition;
+	newPosition.latitude = cur.latitude + (deltaLat * (180 / PI));
+	newPosition.longitude = cur.longitude + deltaLong * ((180 / PI));
+	newPosition.altitude = cur.altitude;
+	return newPosition;
 }
