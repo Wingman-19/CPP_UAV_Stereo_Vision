@@ -43,10 +43,33 @@ This document gives an overview of our process for performing obstacle avoidance
     * The middle section has the UAV continue to the destination waypoint
     * The default section has the UAV rotate in place
     
+## Required Installations to use the Jetson TX1 and the ZED Camera
+  * **JetPack**: JetPack is used to flash the Jetson TX1 and add libraries like CUDA and VisionWorks (We are using JetPack 3.0)
+    * Information about JetPack can be found [here](https://developer.nvidia.com/embedded/jetpack-notes)
+  * **ZED SDK for Jetson TX1**: The ZED SDK is used to be able to capture the disparity images and run programs like the ZED Depth Viewer and ZED Explorer
+    * The ZED SDK can be downloaded [here](https://www.stereolabs.com/developers/release/2.0/#sdkdownloads_anchor)
+    
+## JetPack Installation Issues and Solutions
+  * The installation guide that we followed can be found [here](http://docs.nvidia.com/jetpack-l4t/index.html#developertools/mobile/jetpack/l4t/3.0/jetpack_l4t_install.htm)
+  * JetPack must be run on a 64 bit host machine that is running Ubuntu 14.04 so that the Jetson can be flashed
+    * We used a virtual machine that ran Ubuntu 14.04
+  * When flashing the Jetson TX1, there are two options for the Network Layouts
+    * At first, we attempted to use the second option (Device get IP assigned by DHCP server on host and access Internet via host machine) but this was running into issues where the connection to the host was being refused
+      * All of the tutorials and documentation we found used the first option so finding a solution for this issue was difficult
+    * We were able to get access to a router and ended up using the first option (Device access Internet via router/switch) to flash the Jetson TX1
+      * This method was easier than the other and we ran into fewer issues
+  * Another issue that we found was that when we attempted to ssh into the Jetson TX1, we were getting a connection time out error
+    * This issue was solved when we logged out of the Ubuntu account and logged into the Nvidia account on the Jetson TX1
+    * We are not sure why exactly this worked, but we were able to immediately ssh into the Jetson and therefore download and install all of the post installation libraries
+    
 ## Terms
   * **Disparity Map**: When two images are taken from slightly different locations, the objects in the image appear to shift. This apparent shifting (or difference in pixel positions) between the two images is called disparity. The disparity between the two images creates the disparity map.
+  * **SSH**: SSH is also known as Secure Socket Shell. It is a protocol that provides an administrator with a secure way of remote accessing another computer.
 
 ## Links / Papers
   * [Stereoscopic Vision Papers](https://github.com/Wingman-19/CPP_UAV_Stereo_Vision/tree/master/Stereo%20Vision%20Papers)
   * [Comparative Presentation of Real-Time Obstacle Avoidance Algorithms Using Solely Stereo Vision](http://83.212.134.96/robotics/wp-content/uploads/2011/12/Comparative-Presentation-of-Real-Time-Obstacle-Avoidance_Kos.pdf)
   * [Stereo vision obstacle avoidance using depth and elevation maps](https://robotica.dc.uba.ar/wp-content/papercite-data/pdf/pire2012.pdf)
+  * [JetPack Installation for the Jetson TX1](http://docs.nvidia.com/jetpack-l4t/index.html#developertools/mobile/jetpack/l4t/3.0/jetpack_l4t_install.htm)
+  * [JetPack 3.0 Release Notes](https://developer.nvidia.com/embedded/jetpack-notes)
+  * [ZED SDK Download](https://www.stereolabs.com/developers/release/2.0/#sdkdownloads_anchor)
