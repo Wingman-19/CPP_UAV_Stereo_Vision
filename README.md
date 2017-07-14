@@ -34,13 +34,13 @@ This document gives an overview of our process for performing obstacle avoidance
 
 ## Movements
   * The sections will be numbered from 0 - 8 starting with the top right corner
-    * A section value of 9 represents the default section
+    * A section value of -1 represents the default section
   * Each section specifies a given action
-    * The right 3 sections set a new waypoint to the right
-    * The left 3 sections set a new waypoint to the left
+    * The right 3 sections move the UAV to the right a set number of feet
+    * The left 3 sections move the UAV to the left a set number of feet
     * The top 3 sections increase the altitude of the UAV
     * The bottom 3 sections decrease the altitude of the UAV
-    * The middle section has the UAV continue to the destination waypoint
+    * The middle section has the UAV fly forward
     * The default section has the UAV rotate in place
     
 ## Required Installations to use the Jetson TX1 and the ZED Camera
