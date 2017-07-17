@@ -14,7 +14,7 @@ This document gives an overview of our process for performing obstacle avoidance
       * Using the ZED SDK this is really easy to do
   3. Partition the disparity image into 9 sections
       * Keep track of the starting point for each section (Both horizontally and vertically)
-  4. Count the number of pixels in each section that have a value above a given threshold
+  4. Count the number of pixels in each section that have a value closer than a given thresholod
       * Calculate the percentage for each section
   5. Select the section that has the lowest percentage
       * The section that is selected must have a percentage less than a specified percentage threshold or it will not be selected
@@ -25,9 +25,9 @@ This document gives an overview of our process for performing obstacle avoidance
   8. Close the camera
   
 ## Section Selection
-  1. A disparity threshold is determined at the start (120 for now)
-  2. A threshold for the percentage of pixels that can be above the disparity threshold is determined at the start (20% for now)
-  3. The pixels in each section that have a disparity that is higher than the disparity threshold are counted
+  1. A depth threshold is determined at the start (4 feet for now)
+  2. A threshold for the percentage of pixels that can be close than the depth threshold is determined at the start (20% for now)
+  3. The pixels in each section that have a depth that is closer than the depth threshold are counted
   4. The percentage for each section is calculated
   5. A section is determined by selecting the section with the smallest percentage
       * If this section has a percentage higher than the percentage threshold, then it is not selected and a default section is selected (More information on how the UAV moves in this situation in the [Movements](https://github.com/Wingman-19/CPP_UAV_Stereo_Vision/blob/master/README.md#movements) section)
@@ -73,3 +73,4 @@ This document gives an overview of our process for performing obstacle avoidance
   * [JetPack Installation for the Jetson TX1](http://docs.nvidia.com/jetpack-l4t/index.html#developertools/mobile/jetpack/l4t/3.0/jetpack_l4t_install.htm)
   * [JetPack 3.0 Release Notes](https://developer.nvidia.com/embedded/jetpack-notes)
   * [ZED SDK Download](https://www.stereolabs.com/developers/release/2.0/#sdkdownloads_anchor)
+  * [ZED API Documentation](https://www.stereolabs.com/developers/documentation/API/annotated.html)
