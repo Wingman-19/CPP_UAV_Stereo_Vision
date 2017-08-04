@@ -6,6 +6,8 @@ This document gives an overview of our process for performing obstacle avoidance
 ## Requirements
   * Avoid static obstacles using a stereoscopic camera while moving from point A to point B
   * Avoid moving obstacles using a stereoscopic camera while moving from point A to point B
+  * Detect collisions within 4 seconds of the collision
+    * Give time for the UAV to gather data and make a decision on how to avoid the collision
 
 ## Overall Process
   1. Open the zed camera
@@ -95,3 +97,4 @@ This document gives an overview of our process for performing obstacle avoidance
   * [JetPack 3.0 Release Notes](https://developer.nvidia.com/embedded/jetpack-notes)
   * [ZED SDK Download](https://www.stereolabs.com/developers/release/2.0/#sdkdownloads_anchor)
   * [ZED API Documentation](https://www.stereolabs.com/developers/documentation/API/annotated.html)
+  * [Included MAVLink Library](https://github.com/mavlink/c_library_v2)
