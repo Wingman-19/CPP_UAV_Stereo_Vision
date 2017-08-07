@@ -17,7 +17,7 @@ This document gives an overview of our process for performing obstacle avoidance
   3. Partition the disparity image into sections
       * Keep track of the starting point for each section (Both horizontally and vertically)
       * Discussed in more detail in the [Partitioning Algorithms](https://github.com/Wingman-19/CPP_UAV_Stereo_Vision/blob/master/README.md#partitioning-algorithms) section
-  4. Count the number of pixels in each section that have a value closer than a given thresholod
+  4. Count the number of pixels in each section that have a value closer than a given threshold
       * Calculate the percentage for each section
   5. Select the section that has the lowest percentage
       * The section that is selected must have a percentage less than a specified percentage threshold or it will not be selected
@@ -26,6 +26,8 @@ This document gives an overview of our process for performing obstacle avoidance
       * Discussed in more detail in the [Movements](https://github.com/Wingman-19/CPP_UAV_Stereo_Vision/blob/master/README.md#movements) section
   7. Repeat until the destination is reached
   8. Close the camera
+  
+  ![Obstacle Avoidance Process](Disparity_Images/Obstacle_Avoidance_Process.png)
 
 ## Partitioning Algorithms
   1. **Basic Nine Sections**
