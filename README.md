@@ -54,6 +54,8 @@ This document gives an overview of our process for performing obstacle avoidance
   5. A section is determined by selecting the section with the smallest percentage
       * If this section has a percentage higher than the percentage threshold, then it is not selected and a default section is selected (More information on how the UAV moves in this situation in the [Movements](https://github.com/Wingman-19/CPP_UAV_Stereo_Vision/blob/master/README.md#movements) section)
 
+  ![Section Selection Process](Disparity_Images/Section_Selection.png)
+
 ## Movements
   * The sections will be numbered starting with 0 and with the top left corner
     * A section value of -1 represents the default section
