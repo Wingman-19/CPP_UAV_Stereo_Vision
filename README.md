@@ -65,6 +65,8 @@ This document gives an overview of our process for performing obstacle avoidance
     * Using this angle, the velocities along the y-axis and z-axis are determined (Note that we are using the local NED frame)
     * These commands are sent to the Pixhawk through the use of MAVLink commands (Discussed in more detail in the [Mavlink](https://github.com/Wingman-19/CPP_UAV_Stereo_Vision/blob/master/README.md#mavlink) section)
     
+  ![Manuever Process](Disparity_Images/Maneuver_Decision.png)
+    
 ## MAVLink
   * Through the use of the [c_uart_interface_example](https://github.com/mavlink/c_uart_interface_example) and the files included in the example, we are able to send commands to be able to change the velocity of the UAV
   * The Serial_Port class is used for connecting to the Pixhawk and reading and writing the MAVLink messages
