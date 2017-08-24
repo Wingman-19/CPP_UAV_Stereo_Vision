@@ -53,6 +53,7 @@ This document gives an overview of our process for performing obstacle avoidance
   4. The percentage for each section is calculated
   5. A section is determined by selecting the section with the smallest percentage
       * If this section has a percentage higher than the percentage threshold, then it is not selected and a default section is selected (More information on how the UAV moves in this situation in the [Movements](https://github.com/Wingman-19/CPP_UAV_Stereo_Vision/blob/master/README.md#movements) section)
+      * If multiple sections have the same percentage, then the section that is closest to the center of the overall view is selected. This allows the UAV not to have to travel as far when avoiding obstacles
 
   ![Section Selection Process](Disparity_Images/Section_Selection.png)
 
@@ -68,7 +69,7 @@ This document gives an overview of our process for performing obstacle avoidance
   ![Manuever Process](Disparity_Images/Maneuver_Decision.png)
     
 ## MAVLink
-  * Through the use of the [c_uart_interface_example](https://github.com/mavlink/c_uart_interface_example) and the files included in the example, we are able to send commands to be able to change the velocity of the UAV
+  * Through the use of the [c_uart_interface_example](https://github.com/mavlink/c_uart_interface_example) and the files included in the example, we are attempting to send commands to be able to change the velocity of the UAV
   * The Serial_Port class is used for connecting to the Pixhawk and reading and writing the MAVLink messages
   * The Autopilot_Interface is user to create the messages and prepare the information to be sent and received from the Pixhawk
     
@@ -90,6 +91,42 @@ This document gives an overview of our process for performing obstacle avoidance
   * Another issue that we found was that when we attempted to ssh into the Jetson TX1, we were getting a connection time out error
     * This issue was solved when we logged out of the Ubuntu account and logged into the Nvidia account on the Jetson TX1
     * We are not sure why exactly this worked, but we were able to immediately ssh into the Jetson and therefore download and install all of the post installation libraries
+    
+## Runing the Code
+  * There are a couple of requirements for running the code in the [Obstacle_Avoidance](https://github.com/Wingman-19/CPP_UAV_Stereo_Vision/tree/master/Obstacle_Avoidance) folder:
+    1. The code requires the ZED Stereo Camera to be connected
+      * Note that the ZED requires a NVIDIA Graphics card to be able to create the depth maps
+    2. The Pixhawk needs to be connected through an FTDI cable
+  
+  * Download the project by selecting the button in the top right that says "Clone or download"
+  * Download the [c_library_v2](https://github.com/mavlink/c_library_v2) and rename the folder as "v2.0"
+    * NOTE: move this folder to the Obstacle_Avoidance directory
+    
+  * In the terminal move into the Obstacle_Avoidance directory
+    * To move into a directory use the command: cd <dir_name>
+    * To move back out of a directory use the command: cd ..
+    
+  * Create a new directory called "build" and move into 
+    * Use the command: mkdir build
+  
+  * In the build directory use the command: cmake ..
+    * This creates the MakeFile used to compile the code
+    
+  * To compile the code use the command: make
+    * This will create the executable
+    
+  * To run the executable use the command: ./<executable_name>
+    * The name of the executable should be "ZED_Obstacle_Avoidance"
+    
+## Current Issues
+  * The first issue is that when running the code, it gets caught in a loop after receiving the system id and component id
+    * This is caused because the Pixhawk is not sending the appropriate messages
+    * One solution that works some of the time is to make sure the Pixhawk has a GPS signal
+    * Another solution that works some of the time is to open another terminal window and running the command: mavproxy.py --master=/dev/ttyUSB0 --baudrate=57600
+    * **NOTE**: These solutions do not always work so a more perminant solution should be found
+  
+  * The next issue is that the Pixhawk is not recieving the MAVink messages that are sent to change the velocities of the UAS
+    * So far we do not have a solution to this problem
     
 ## Terms
   * **Disparity Map**: When two images are taken from slightly different locations, the objects in the image appear to shift. This apparent shifting (or difference in pixel positions) between the two images is called disparity. The disparity between the two images creates the disparity map.
